@@ -1,0 +1,40 @@
+<UserControl x:Class="MixerOnline.Controls.DualStereoLedMeter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MixerOnline.Controls"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="220" d:DesignWidth="66">
+    <Grid HorizontalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/> <!-- Meter L -->
+            <ColumnDefinition Width="26"/>   <!-- dB Labels -->
+            <ColumnDefinition Width="Auto"/> <!-- Meter R -->
+        </Grid.ColumnDefinitions>
+
+        <local:SegmentedVuMeter x:Name="MeterL" Grid.Column="0"/>
+
+        <Grid Grid.Column="1" VerticalAlignment="Stretch" Margin="0,2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="0" Foreground="#71717a" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="1" Text="-6" Foreground="#52525b" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="2" Text="-12" Foreground="#52525b" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="3" Text="-18" Foreground="#3f3f46" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="4" Text="-24" Foreground="#3f3f46" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="5" Text="-36" Foreground="#27272a" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="6" Text="-∞" Foreground="#27272a" FontSize="8" FontFamily="Consolas" HorizontalAlignment="Center"/>
+        </Grid>
+
+        <local:SegmentedVuMeter x:Name="MeterR" Grid.Column="2"/>
+    </Grid>
+</UserControl>

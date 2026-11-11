@@ -1,0 +1,32 @@
+# IDE and editor files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build and publish directories
+**/bin/
+**/obj/
+dist/
+publish/
+TestResults/
+
+# Compiled binaries and release archives
+*.exe
+*.dll
+*.pdb
+*.zip
+*.nupkg
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Keep tracked documentation and application assets
+!docs/assets/*.png
+!docs/assets/*.svg
+!src/**/Resources/*.ico
+!src/**/Resources/*.png
+!extension/icons/*.png

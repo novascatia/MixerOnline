@@ -1,0 +1,51 @@
+<UserControl x:Class="MixerOnline.Controls.VuMeter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="24" d:DesignWidth="200">
+    <Grid Height="14" Background="#0b0d12" ClipToBounds="True">
+        <Border CornerRadius="4" BorderBrush="#1e2330" BorderThickness="1" Background="#0f1218">
+            <Grid x:Name="MeterContainer" Margin="1">
+                <!-- Background ticks -->
+                <Grid Opacity="0.15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60*"/>
+                        <ColumnDefinition Width="25*"/>
+                        <ColumnDefinition Width="15*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" BorderBrush="#ffffff" BorderThickness="0,0,1,0"/>
+                    <Border Grid.Column="1" BorderBrush="#ffffff" BorderThickness="0,0,1,0"/>
+                </Grid>
+
+                <!-- RMS Level Bar -->
+                <ProgressBar x:Name="RmsBar"
+                             Minimum="0" Maximum="1" Value="0"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Height="10"
+                             VerticalAlignment="Center">
+                    <ProgressBar.Foreground>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#059669" Offset="0.0"/>
+                            <GradientStop Color="#10b981" Offset="0.6"/>
+                            <GradientStop Color="#f59e0b" Offset="0.82"/>
+                            <GradientStop Color="#ef4444" Offset="0.96"/>
+                        </LinearGradientBrush>
+                    </ProgressBar.Foreground>
+                </ProgressBar>
+
+                <!-- Peak Hold Line -->
+                <Canvas x:Name="PeakCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Border x:Name="PeakLine"
+                            Width="2" Height="10"
+                            Background="#00d2ff"
+                            CornerRadius="1"
+                            Canvas.Top="1" Canvas.Left="0"
+                            Visibility="Collapsed"/>
+                </Canvas>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

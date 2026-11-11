@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "MixerOnline Audio Bridge",
+  "version": "2.2.0",
+  "description": "Exclusively captures audio from a selected Chromium browser tab (Chrome, Brave, Edge, Opera, Vivaldi) for MixerOnline",
+  "permissions": [
+    "tabCapture",
+    "tabs",
+    "offscreen",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "ws://127.0.0.1/*",
+    "http://localhost/*",
+    "ws://localhost/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MixerOnline Audio Bridge",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

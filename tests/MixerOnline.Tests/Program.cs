@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +24,10 @@ namespace MixerOnline.Tests
 
             int passed = 0;
             int failed = 0;
+            int skipped = 0;
+
+            bool isCi = string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
 
             void Assert(string testName, bool condition, string detail = "")
             {
@@ -37,6 +43,67 @@ namespace MixerOnline.Tests
                     Console.ResetColor();
                     failed++;
                 }
+            }
+
+            void Skip(string testName, string reason)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"[SKIP] {testName} ({reason})");
+                Console.ResetColor();
+                skipped++;
+            }
+
+            static int FindAvailablePort(int preferredStart = 39150)
+            {
+                for (int port = preferredStart; port < preferredStart + 200; port++)
+                {
+                    try
+                    {
+                        var probe = new TcpListener(IPAddress.Loopback, port);
+                        probe.Start();
+                        probe.Stop();
+                        return port;
+                    }
+                    catch { }
+                }
+
+                var fallback = new TcpListener(IPAddress.Loopback, 0);
+                fallback.Start();
+                int freePort = ((IPEndPoint)fallback.LocalEndpoint).Port;
+                fallback.Stop();
+                return freePort;
+            }
+
+            static async Task<(BrowserBridgeServer? Server, int Port, string StatusBody, string? Error)> StartBridgeWithRetryAsync(BrowserAudioReceiver receiver, int startPort = 39150)
+            {
+                string? lastError = null;
+                for (int attempt = 0; attempt < 5; attempt++)
+                {
+                    int port = FindAvailablePort(startPort + attempt * 10);
+                    var candidate = new BrowserBridgeServer(receiver, port);
+                    string? err = null;
+                    candidate.ExtensionError += (_, msg) => err ??= msg;
+                    candidate.Start();
+
+                    using var http = new HttpClient { Timeout = TimeSpan.FromMilliseconds(500) };
+                    for (int poll = 0; poll < 10; poll++)
+                    {
+                        if (err != null) break;
+                        try
+                        {
+                            string body = await http.GetStringAsync($"http://127.0.0.1:{port}/status");
+                            return (candidate, port, body, null);
+                        }
+                        catch
+                        {
+                            await Task.Delay(50);
+                        }
+                    }
+
+                    lastError = err ?? $"Timed out polling http://127.0.0.1:{port}/status";
+                    candidate.Dispose();
+                }
+                return (null, 0, string.Empty, lastError);
             }
 
             // Test 1: RingBuffer FIFO and overflow protection
@@ -152,12 +219,21 @@ namespace MixerOnline.Tests
                 var captureDevs = dm.GetCaptureDevices();
                 var renderDevs = dm.GetRenderDevices();
 
-                Assert("Capture Devices Enumerated", captureDevs.Count > 0, $"Found {captureDevs.Count} inputs");
-                Assert("Render Devices Enumerated", renderDevs.Count > 0, $"Found {renderDevs.Count} outputs");
+                if (isCi && captureDevs.Count == 0 && renderDevs.Count == 0)
+                {
+                    Skip("Capture Devices Enumerated", "Headless CI VM has no audio hardware");
+                    Skip("Render Devices Enumerated", "Headless CI VM has no audio hardware");
+                    Skip("VB-Cable Detection", "Headless CI VM has no VB-Cable driver");
+                }
+                else
+                {
+                    Assert("Capture Devices Enumerated", captureDevs.Count > 0, $"Found {captureDevs.Count} inputs");
+                    Assert("Render Devices Enumerated", renderDevs.Count > 0, $"Found {renderDevs.Count} outputs");
 
-                bool vbInstalled = dm.IsVirtualCableInstalled();
-                var vbDevice = dm.FindVirtualCablePlaybackDevice();
-                Assert("VB-Cable Detection", vbInstalled && vbDevice != null, $"VB Device: {vbDevice?.Name}");
+                    bool vbInstalled = dm.IsVirtualCableInstalled();
+                    var vbDevice = dm.FindVirtualCablePlaybackDevice();
+                    Assert("VB-Cable Detection", vbInstalled && vbDevice != null, $"VB Device: {vbDevice?.Name}");
+                }
             }
             catch (Exception ex)
             {
@@ -168,71 +244,83 @@ namespace MixerOnline.Tests
             try
             {
                 var receiver = new BrowserAudioReceiver();
-                using var server = new BrowserBridgeServer(receiver, 49886);
-                server.Start();
+                var (server, testPort, resp, startError) = await StartBridgeWithRetryAsync(receiver, 39150);
 
-                await Task.Delay(200);
-
-                using var http = new HttpClient();
-                var resp = await http.GetStringAsync("http://127.0.0.1:49886/status");
-                Assert("Bridge HTTP /status Endpoint", resp.Contains("MixerOnline") && resp.Contains("\"port\":49886"), $"Response: {resp}");
-
-                // Verify WebSocket Origin Guard blocks external web pages
-                bool blockedWebOrigin = false;
-                try
+                if (server == null)
                 {
-                    using var wsEvil = new ClientWebSocket();
-                    wsEvil.Options.SetRequestHeader("Origin", "https://evil.example");
-                    await wsEvil.ConnectAsync(new Uri("ws://127.0.0.1:49886/ws"), CancellationToken.None);
-                }
-                catch (WebSocketException)
-                {
-                    blockedWebOrigin = true;
-                }
-                Assert("Bridge Origin Guard Blocks Web Origin", blockedWebOrigin);
-
-                using var ws = new ClientWebSocket();
-                ws.Options.SetRequestHeader("Origin", "chrome-extension://testextensionid");
-                await ws.ConnectAsync(new Uri("ws://127.0.0.1:49886/ws"), CancellationToken.None);
-                Assert("Bridge WebSocket Connection (Chromium Extension Origin)", ws.State == WebSocketState.Open);
-
-                string helloJson = JsonSerializer.Serialize(new HelloMessage { Type = "HELLO", Client = "UnitTestExtension", Version = "2.0" });
-                await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(helloJson)), WebSocketMessageType.Text, true, CancellationToken.None);
-
-                var tabListMsg = new TabListMessage
-                {
-                    Type = "TAB_LIST",
-                    Tabs = new System.Collections.Generic.List<TabItem>
+                    if (isCi && startError != null && startError.Contains("Access is denied", StringComparison.OrdinalIgnoreCase))
                     {
-                        new TabItem { Id = 101, Title = "YouTube - Lofi Beats", Url = "https://youtube.com", Audible = true },
-                        new TabItem { Id = 102, Title = "Spotify Web Player", Url = "https://spotify.com", Audible = false }
+                        Skip("Bridge HTTP / WebSocket Suite", $"Restricted HttpListener ACL on headless CI: {startError}");
                     }
-                };
-                string tabJson = JsonSerializer.Serialize(tabListMsg);
-                await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(tabJson)), WebSocketMessageType.Text, true, CancellationToken.None);
-
-                float[] testPcm = new float[480 * 2]; // 10ms stereo
-                for (int i = 0; i < 480; i++)
-                {
-                    float s = (float)Math.Sin(2 * Math.PI * 440 * (i / 48000.0)) * 0.5f;
-                    testPcm[i * 2] = s;
-                    testPcm[i * 2 + 1] = s;
+                    else
+                    {
+                        Assert("BrowserBridgeServer Startup", false, startError ?? "Unknown startup failure");
+                    }
                 }
-                byte[] rawBytes = new byte[testPcm.Length * 4];
-                Buffer.BlockCopy(testPcm, 0, rawBytes, 0, rawBytes.Length);
-
-                for (int packet = 0; packet < 5; packet++)
+                else
                 {
-                    await ws.SendAsync(new ArraySegment<byte>(rawBytes), WebSocketMessageType.Binary, true, CancellationToken.None);
-                    await Task.Delay(10);
+                    using (server)
+                    {
+                        Assert("Bridge HTTP /status Endpoint", resp.Contains("MixerOnline") && resp.Contains($"\"port\":{testPort}"), $"Response: {resp}");
+
+                        // Verify WebSocket Origin Guard blocks external web pages
+                        bool blockedWebOrigin = false;
+                        try
+                        {
+                            using var wsEvil = new ClientWebSocket();
+                            wsEvil.Options.SetRequestHeader("Origin", "https://evil.example");
+                            await wsEvil.ConnectAsync(new Uri($"ws://127.0.0.1:{testPort}/ws"), CancellationToken.None);
+                        }
+                        catch (WebSocketException)
+                        {
+                            blockedWebOrigin = true;
+                        }
+                        Assert("Bridge Origin Guard Blocks Web Origin", blockedWebOrigin);
+
+                        using var ws = new ClientWebSocket();
+                        ws.Options.SetRequestHeader("Origin", "chrome-extension://testextensionid");
+                        await ws.ConnectAsync(new Uri($"ws://127.0.0.1:{testPort}/ws"), CancellationToken.None);
+                        Assert("Bridge WebSocket Connection (Chromium Extension Origin)", ws.State == WebSocketState.Open);
+
+                        string helloJson = JsonSerializer.Serialize(new HelloMessage { Type = "HELLO", Client = "UnitTestExtension", Version = "2.2" });
+                        await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(helloJson)), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                        var tabListMsg = new TabListMessage
+                        {
+                            Type = "TAB_LIST",
+                            Tabs = new System.Collections.Generic.List<TabItem>
+                            {
+                                new TabItem { Id = 101, Title = "YouTube - Lofi Beats", Url = "https://youtube.com", Audible = true },
+                                new TabItem { Id = 102, Title = "Spotify Web Player", Url = "https://spotify.com", Audible = false }
+                            }
+                        };
+                        string tabJson = JsonSerializer.Serialize(tabListMsg);
+                        await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(tabJson)), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                        float[] testPcm = new float[480 * 2]; // 10ms stereo
+                        for (int i = 0; i < 480; i++)
+                        {
+                            float s = (float)Math.Sin(2 * Math.PI * 440 * (i / 48000.0)) * 0.5f;
+                            testPcm[i * 2] = s;
+                            testPcm[i * 2 + 1] = s;
+                        }
+                        byte[] rawBytes = new byte[testPcm.Length * 4];
+                        Buffer.BlockCopy(testPcm, 0, rawBytes, 0, rawBytes.Length);
+
+                        for (int packet = 0; packet < 5; packet++)
+                        {
+                            await ws.SendAsync(new ArraySegment<byte>(rawBytes), WebSocketMessageType.Binary, true, CancellationToken.None);
+                            await Task.Delay(10);
+                        }
+
+                        await Task.Delay(100);
+                        Assert("BrowserAudioReceiver Level Metering", receiver.PeakLevel > 0.1f, $"Peak: {receiver.PeakLevel:F3}");
+                        Assert("BrowserAudioReceiver Buffer Count", receiver.Buffer.Count > 0, $"Buffered: {receiver.Buffer.Count} floats");
+
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+                        server.Stop();
+                    }
                 }
-
-                await Task.Delay(100);
-                Assert("BrowserAudioReceiver Level Metering", receiver.PeakLevel > 0.1f, $"Peak: {receiver.PeakLevel:F3}");
-                Assert("BrowserAudioReceiver Buffer Count", receiver.Buffer.Count > 0, $"Buffered: {receiver.Buffer.Count} floats");
-
-                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
-                server.Stop();
             }
             catch (Exception ex)
             {
@@ -296,12 +384,19 @@ namespace MixerOnline.Tests
             // Test 6: AudioEngine Full Integration
             try
             {
-                using var engine = new AudioEngine(49877, 20);
+                using var engine = new AudioEngine(FindAvailablePort(39250), 20);
                 engine.Start();
 
                 Assert("AudioEngine Initialized", true);
                 Assert("MixerBus Format 48kHz Stereo", engine.MixerBus.WaveFormat.SampleRate == 48000 && engine.MixerBus.WaveFormat.Channels == 2);
-                Assert("Output Router Configured", !string.IsNullOrEmpty(engine.OutputRouter.PrimaryDeviceId));
+                if (isCi && engine.DeviceManager.GetRenderDevices().Count == 0)
+                {
+                    Skip("Output Router Configured", "Headless CI VM has 0 audio render devices");
+                }
+                else
+                {
+                    Assert("Output Router Configured", !string.IsNullOrEmpty(engine.OutputRouter.PrimaryDeviceId));
+                }
 
                 engine.Dispose();
                 Assert("AudioEngine Disposed Cleanly", true);
@@ -315,7 +410,7 @@ namespace MixerOnline.Tests
             }
 
             Console.WriteLine("=================================================");
-            Console.WriteLine($"Tests Completed: {passed + failed} | Passed: {passed} | Failed: {failed}");
+            Console.WriteLine($"Tests Completed: {passed + failed} | Passed: {passed} | Failed: {failed} | Skipped: {skipped}");
             Console.WriteLine("=================================================");
 
             Environment.Exit(failed == 0 ? 0 : 1);

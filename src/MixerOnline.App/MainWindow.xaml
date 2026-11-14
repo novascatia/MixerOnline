@@ -5,8 +5,8 @@
         xmlns:viewmodels="clr-namespace:MixerOnline.ViewModels"
         Title="MixerOnline" 
         Icon="Resources/app.ico"
-        Height="720" Width="1020"
-        MinHeight="680" MinWidth="920"
+        Height="760" Width="1020"
+        MinHeight="700" MinWidth="920"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         WindowStyle="None"
@@ -345,6 +345,87 @@
                                                 VerticalAlignment="Center"
                                                 ToolTip="Blend intensity of the active voice effect (0% to 100%)"/>
                                         <TextBlock Grid.Column="2" Text="{Binding VoiceEffectIntensityText}" FontFamily="Consolas" FontSize="10"
+                                                   Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Vocal Auto-Tune -->
+                            <Border Background="#0c0c0e" BorderBrush="#1f1f23" BorderThickness="1" CornerRadius="5" Padding="10,8" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="6"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Auto-Tune" FontSize="11" FontWeight="Medium" Foreground="#a1a1aa"/>
+                                            <TextBlock Text=" (Pitch Correct)" FontSize="9" Foreground="#52525b" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="#141418" BorderBrush="#27272a" BorderThickness="1" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding AutoTuneNoteDisplay}" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{Binding AutoTuneNoteColor}"/>
+                                        </Border>
+                                        <ToggleButton Grid.Column="3" Style="{StaticResource ConsoleCueButton}"
+                                                      IsChecked="{Binding IsAutoTuneEnabled, Mode=TwoWay}"
+                                                      ToolTip="Toggle real-time vocal Auto-Tune pitch correction"/>
+                                    </Grid>
+
+                                    <!-- Key & Scale Selectors -->
+                                    <Grid Margin="0,3,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="6"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Root Key:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
+                                            <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
+                                                      ItemsSource="{Binding AutoTuneKeyOptions}"
+                                                      SelectedIndex="{Binding AutoTuneKeyIndex, Mode=TwoWay}"
+                                                      ToolTip="Root key (C, C#, D...) for pitch quantization"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Scale:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
+                                            <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
+                                                      ItemsSource="{Binding AutoTuneScaleOptions}"
+                                                      SelectedIndex="{Binding AutoTuneScaleIndex, Mode=TwoWay}"
+                                                      ToolTip="Target scale (Chromatic, Major, Minor)"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Retune Speed Slider (Hard Snap vs Natural) -->
+                                    <Grid Margin="0,2,0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Speed" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
+                                                Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                                Value="{Binding AutoTuneSpeed, Mode=TwoWay}"
+                                                VerticalAlignment="Center"
+                                                ToolTip="Retune Speed: 0% = Hard Snap (Cher/T-Pain robotic effect), 100% = Soft Natural"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding AutoTuneSpeedText}" FontFamily="Consolas" FontSize="10"
+                                                   Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                    </Grid>
+
+                                    <!-- Auto-Tune Mix Slider -->
+                                    <Grid Margin="0,1,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="34"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Mix" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                        <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
+                                                Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                                Value="{Binding AutoTuneMix, Mode=TwoWay}"
+                                                VerticalAlignment="Center"
+                                                ToolTip="Auto-Tune dry/wet blend intensity (0% to 100%)"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding AutoTuneMixText}" FontFamily="Consolas" FontSize="10"
                                                    Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                     </Grid>
                                 </StackPanel>

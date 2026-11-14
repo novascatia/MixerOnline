@@ -64,6 +64,11 @@ namespace MixerOnline.Core.Config
             public int MonitorSourceMode { get; set; }
             public int VoiceEffectMode { get; set; }
             public float VoiceEffectIntensity { get; set; } = 0.75f;
+            public bool AutoTuneEnabled { get; set; }
+            public int AutoTuneKey { get; set; }
+            public int AutoTuneScale { get; set; }
+            public float AutoTuneSpeed { get; set; } = 0.20f;
+            public float AutoTuneMix { get; set; } = 1.0f;
         }
 
         public static AppSettings Load()
@@ -103,6 +108,11 @@ namespace MixerOnline.Core.Config
                             settings.MonitorSourceMode = extras.MonitorSourceMode;
                             settings.VoiceEffectMode = extras.VoiceEffectMode;
                             settings.VoiceEffectIntensity = extras.VoiceEffectIntensity;
+                            settings.AutoTuneEnabled = extras.AutoTuneEnabled;
+                            settings.AutoTuneKey = extras.AutoTuneKey;
+                            settings.AutoTuneScale = extras.AutoTuneScale;
+                            settings.AutoTuneSpeed = extras.AutoTuneSpeed;
+                            settings.AutoTuneMix = extras.AutoTuneMix;
                         }
                     }
                 }
@@ -148,7 +158,16 @@ namespace MixerOnline.Core.Config
                 VoiceEffectMode = Math.Clamp(settings.VoiceEffectMode, 0, 5),
                 VoiceEffectIntensity = float.IsFinite(settings.VoiceEffectIntensity)
                     ? Math.Clamp(settings.VoiceEffectIntensity, 0f, 1f)
-                    : 0.75f
+                    : 0.75f,
+                AutoTuneEnabled = settings.AutoTuneEnabled,
+                AutoTuneKey = Math.Clamp(settings.AutoTuneKey, 0, 11),
+                AutoTuneScale = Math.Clamp(settings.AutoTuneScale, 0, 2),
+                AutoTuneSpeed = float.IsFinite(settings.AutoTuneSpeed)
+                    ? Math.Clamp(settings.AutoTuneSpeed, 0f, 1f)
+                    : 0.20f,
+                AutoTuneMix = float.IsFinite(settings.AutoTuneMix)
+                    ? Math.Clamp(settings.AutoTuneMix, 0f, 1f)
+                    : 1.0f
             };
 
             lock (IoLock)
@@ -186,6 +205,14 @@ namespace MixerOnline.Core.Config
             settings.VoiceEffectIntensity = float.IsFinite(settings.VoiceEffectIntensity)
                 ? Math.Clamp(settings.VoiceEffectIntensity, 0f, 1f)
                 : 0.75f;
+            settings.AutoTuneKey = Math.Clamp(settings.AutoTuneKey, 0, 11);
+            settings.AutoTuneScale = Math.Clamp(settings.AutoTuneScale, 0, 2);
+            settings.AutoTuneSpeed = float.IsFinite(settings.AutoTuneSpeed)
+                ? Math.Clamp(settings.AutoTuneSpeed, 0f, 1f)
+                : 0.20f;
+            settings.AutoTuneMix = float.IsFinite(settings.AutoTuneMix)
+                ? Math.Clamp(settings.AutoTuneMix, 0f, 1f)
+                : 1.0f;
 
             // Start with monitoring off to prevent accidental mic slapback or double playback
             settings.IsMonitoringEnabled = false;

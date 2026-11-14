@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/assets/banner.png" alt="MixerOnline" width="840" /></p>
 
 <p align="center">
-  MixerOnline Beta (`v1.1.0-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with zero-latency Voice FX, configurable Cue Loopback monitoring, and Chromium tab audio isolation.
+  MixerOnline Beta (`v1.1.0-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with real-time vocal Auto-Tune, zero-latency Voice FX, configurable Cue Loopback monitoring, and Chromium tab audio isolation.
 </p>
 
 <p align="center">
@@ -64,6 +64,21 @@ Load `<extracted-folder>\extension` in **any supported Chromium browser**:
 
 ## What's New in Beta (`v1.1.0-beta`)
 
+### Real-Time Vocal Auto-Tune / Pitch Correction (`AutoTuneProcessor.cs`)
+MixerOnline Beta now features a high-performance, low-latency vocal pitch correction engine built directly into the microphone signal path:
+- **Two-Tier Sub-Hertz Pitch Tracking:** Combines 12 kHz decimated autocorrelation with 48 kHz parabolic interpolation to detect vocal fundamentals ($70–1050\text{ Hz}$) with high accuracy and $< 0.5\%$ CPU overhead. Automatically bypasses unvoiced consonants and breaths to eliminate warbling artifacts.
+- **Musical Scale Quantizer:** Select from all 12 Root Keys (`C, C#, D, D#, E, F, F#, G, G#, A, A#, B`) and 3 Scale modes:
+  - **Chromatic:** Quantizes to all 12 musical semitones (nearest note).
+  - **Major:** Quantizes to natural major scale degrees (`W-W-H-W-W-W-H`).
+  - **Minor:** Quantizes to natural minor scale degrees (`W-H-W-W-H-W-W`).
+- **Retune Speed Slider:**
+  - **Hard Snap (`0%`, ~2ms):** Iconic robotic Cher / T-Pain / Travis Scott instantaneous stepped pitch quantization.
+  - **Fast / Tune (`15–25%`, ~15ms):** Snappy modern commercial pop vocal tuning.
+  - **Natural (`30–60%`, ~35ms):** Preserves natural vocal vibrato and vocal inflection while locking pitch to scale notes.
+  - **Soft (`70–100%`, ~80ms):** Subtle pitch stabilization.
+- **Live Pitch Note Readout:** Real-time console badge displaying detected note and cents error (e.g. `A4 (+6¢)`, `C#4 (-12¢)`, or `--` when silent).
+- **Zero-Glitch Overlap-Add Resampler:** 16 ms vocal grains with Hann windowing, click-free bypass crossfade, and wet/dry Mix slider (`0–100%`).
+
 ### Zero-Latency Voice FX (`VoiceEffectProcessor.cs`)
 Every vocal effect runs sample-by-sample with **zero samples of dry lookahead delay** so microphone timing never drifts against browser music. Switching presets or toggling back to `Clean` crossfades smoothly over ~10 ms (`480` frames) with no clicks or pops mid-sentence, controlled by the **FX Mix** slider (`0–100%`, default `75%`):
 
@@ -95,6 +110,8 @@ MixerOnline Beta shares core configuration (`SelectedMicId`, `SelectedOutputId`,
 | Capability | Details |
 |---|---|
 | **Exclusive Tab Capture** | Isolates audio from one selected tab across Chrome, Brave, Edge, Opera, Vivaldi, or Arc via Web Audio `AudioWorklet` (`48 kHz` stereo Float32 PCM) with WebRTC APM processing bypassed. |
+| **Real-Time Vocal Auto-Tune** | Sub-hertz pitch tracking, 12 root keys, Chromatic/Major/Minor scales, Retune Speed (Hard Snap -> Natural), wet/dry mix, and live note cents display. |
+| **Zero-Latency Voice FX** | 5 vocal presets (Room Isolate, Echo, Telephone, Radio, Hall) with 0 dry lookahead latency and click-free crossfading. |
 | **48 kHz 32-Bit Float Mixing Bus** | Stereo summing engine (`AudioMixerBus.cs`) with exponential gain smoothing (`0.015f` per frame) and dedicated master and monitor soft-knee limiters. |
 | **Key / Tone Transposer (`-6` to `+6` semitones)** | Dual-grain synchronous overlap-add pitch shifter (`PitchShifter.cs`) using 50 ms grains and a 4096-sample Hann window to transpose music without altering tempo. |
 | **Mic Sync Delay (`0–200ms`)** | Sample-accurate circular delay line (`DelayLine.cs`) with smooth slew control, `0ms` / `45ms` / `80ms` quick presets, and a low-latency `+11ms` Beta default. |

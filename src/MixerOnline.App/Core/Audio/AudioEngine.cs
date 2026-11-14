@@ -66,6 +66,41 @@ namespace MixerOnline.Core.Audio
             set => _mixerBus.VoiceEffectIntensity = value;
         }
 
+        public bool AutoTuneEnabled
+        {
+            get => _mixerBus.AutoTuneEnabled;
+            set => _mixerBus.AutoTuneEnabled = value;
+        }
+
+        public int AutoTuneKey
+        {
+            get => _mixerBus.AutoTuneKey;
+            set => _mixerBus.AutoTuneKey = value;
+        }
+
+        public int AutoTuneScale
+        {
+            get => _mixerBus.AutoTuneScale;
+            set => _mixerBus.AutoTuneScale = value;
+        }
+
+        public float AutoTuneSpeed
+        {
+            get => _mixerBus.AutoTuneSpeed;
+            set => _mixerBus.AutoTuneSpeed = value;
+        }
+
+        public float AutoTuneMix
+        {
+            get => _mixerBus.AutoTuneMix;
+            set => _mixerBus.AutoTuneMix = value;
+        }
+
+        public bool IsPitchDetected => _mixerBus.IsPitchDetected;
+        public float DetectedPitchHz => _mixerBus.DetectedPitchHz;
+        public string DetectedNoteName => _mixerBus.DetectedNoteName;
+        public float PitchCentsError => _mixerBus.PitchCentsError;
+
         public event EventHandler<string>? StatusMessage;
 
         public AudioEngine(int bridgePort = 49876, int latencyMs = 30)

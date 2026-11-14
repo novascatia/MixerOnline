@@ -12,6 +12,7 @@ namespace MixerOnline.Core.Audio
         private readonly AudioLimiter _monitorLimiter = new();
         private readonly DelayLine _micDelayLine = new();
         private readonly VoiceEffectProcessor _voiceEffectProcessor = new();
+        private readonly AutoTuneProcessor _autoTuneProcessor = new();
         private readonly PitchShifter _browserPitchShifter = new();
 
         private readonly WaveFormat _waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(48000, 2);
@@ -74,6 +75,42 @@ namespace MixerOnline.Core.Audio
             get => _voiceEffectProcessor.Intensity;
             set => _voiceEffectProcessor.Intensity = value;
         }
+
+        public bool AutoTuneEnabled
+        {
+            get => _autoTuneProcessor.Enabled;
+            set => _autoTuneProcessor.Enabled = value;
+        }
+
+        public int AutoTuneKey
+        {
+            get => _autoTuneProcessor.Key;
+            set => _autoTuneProcessor.Key = value;
+        }
+
+        public int AutoTuneScale
+        {
+            get => _autoTuneProcessor.Scale;
+            set => _autoTuneProcessor.Scale = value;
+        }
+
+        public float AutoTuneSpeed
+        {
+            get => _autoTuneProcessor.RetuneSpeed;
+            set => _autoTuneProcessor.RetuneSpeed = value;
+        }
+
+        public float AutoTuneMix
+        {
+            get => _autoTuneProcessor.Mix;
+            set => _autoTuneProcessor.Mix = value;
+        }
+
+        public bool IsPitchDetected => _autoTuneProcessor.IsPitchDetected;
+        public float DetectedPitchHz => _autoTuneProcessor.DetectedPitchHz;
+        public string DetectedNoteName => _autoTuneProcessor.DetectedNoteName;
+        public float PitchCentsError => _autoTuneProcessor.PitchCentsError;
+        public AutoTuneProcessor AutoTuneProcessor => _autoTuneProcessor;
 
         public float BrowserVolume
         {
@@ -152,6 +189,7 @@ namespace MixerOnline.Core.Audio
 
             _micCapture.OutputBuffer.Read(micSpan);
             _voiceEffectProcessor.Process(micSpan);
+            _autoTuneProcessor.Process(micSpan);
             _micDelayLine.Process(micSpan);
             _browserReceiver.Buffer.Read(browserSpan);
             _browserPitchShifter.Process(browserSpan);

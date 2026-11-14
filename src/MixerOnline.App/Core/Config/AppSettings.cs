@@ -26,6 +26,12 @@ namespace MixerOnline.Core.Config
         public int VoiceEffectMode { get; set; } = 0; // 0=Off, 1=RoomIsolate, 2=Echo, 3=Telephone, 4=Radio, 5=HallReverb
         public float VoiceEffectIntensity { get; set; } = 0.75f; // 0.0..1.0
 
+        public bool AutoTuneEnabled { get; set; } = false;
+        public int AutoTuneKey { get; set; } = 0; // 0=C, 1=C#, ..., 11=B
+        public int AutoTuneScale { get; set; } = 0; // 0=Chromatic, 1=Major, 2=Minor
+        public float AutoTuneSpeed { get; set; } = 0.20f; // 0.0 (Hard Snap) .. 1.0 (Soft Natural)
+        public float AutoTuneMix { get; set; } = 1.0f; // 0.0 (Dry) .. 1.0 (Wet)
+
         public int LatencyMs { get; set; } = 30;
         public int BridgePort { get; set; } = 49876;
 

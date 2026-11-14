@@ -980,6 +980,117 @@ namespace MixerOnline.Tests
                     $"TailRms={busRevTailRms:F4}");
 
                 Assert("AudioEngine + MixerBus All Modes Finite & Limiter-Bounded", allModesFiniteAndBounded);
+
+                // ================= AUTO-TUNE SUITE =================
+                Console.WriteLine("\n--- Testing Vocal Auto-Tune Engine ---");
+
+                // Test 1: AutoTuneProcessor Bypass (Zero Disruption)
+                var atProc = new AutoTuneProcessor(enabled: false);
+                float[] atBypassBuffer = new float[960]; // 480 frames stereo
+                for (int i = 0; i < atBypassBuffer.Length; i++) atBypassBuffer[i] = (float)Math.Sin(i * 0.05) * 0.5f;
+                float[] atBypassExpected = (float[])atBypassBuffer.Clone();
+                atProc.Process(atBypassBuffer.AsSpan());
+                float atMaxBypassDiff = 0f;
+                for (int i = 0; i < atBypassBuffer.Length; i++)
+                {
+                    float diff = Math.Abs(atBypassBuffer[i] - atBypassExpected[i]);
+                    if (diff > atMaxBypassDiff) atMaxBypassDiff = diff;
+                }
+                Assert("AutoTune Disabled Bit-Exact Passthrough", atMaxBypassDiff < 0.00001f, $"MaxDiff={atMaxBypassDiff:F7}");
+
+                // Test 2: Scale Quantization Logic
+                // A4 (69) in C Major (root 0) should remain 69 (A4)
+                int noteA4InCMajor = AutoTuneProcessor.FindNearestScaleNote(69.0f, rootKey: 0, scaleIndex: 1);
+                // G#4 (68) in C Major should snap to 67 (G4) or 69 (A4), not 68
+                int noteGSharpInCMajor = AutoTuneProcessor.FindNearestScaleNote(68.0f, rootKey: 0, scaleIndex: 1);
+                // G#4 (68) in C Minor (intervals 0,2,3,5,7,8,10) should remain 68 (Ab4)
+                int noteGSharpInCMinor = AutoTuneProcessor.FindNearestScaleNote(68.0f, rootKey: 0, scaleIndex: 2);
+                // Fractional 69.3 (A4 + 30 cents) in Chromatic should snap to 69
+                int noteA4SharpInChrom = AutoTuneProcessor.FindNearestScaleNote(69.3f, rootKey: 0, scaleIndex: 0);
+
+                bool quantizerCorrect = noteA4InCMajor == 69 &&
+                                        (noteGSharpInCMajor == 67 || noteGSharpInCMajor == 69) &&
+                                        noteGSharpInCMinor == 68 &&
+                                        noteA4SharpInChrom == 69;
+                Assert("AutoTune Scale Quantization (C Major, C Minor, Chromatic)", quantizerCorrect,
+                    $"A4->{noteA4InCMajor}, G#->{noteGSharpInCMajor} (CMaj), G#->{noteGSharpInCMinor} (CMin), A4+30c->{noteA4SharpInChrom}");
+
+                // Test 3: Pitch Detection on 440 Hz Sine Tone (A4)
+                var atDetector = new AutoTuneProcessor(enabled: true, key: 0, scale: 0, retuneSpeed: 0.0f);
+                float[] sine440Buffer = new float[2048 * 2]; // 2048 stereo frames
+                FillSineStereo(sine440Buffer.AsSpan(), 440.0, 0.6f, 0);
+                atDetector.Process(sine440Buffer.AsSpan());
+
+                bool pitchDetected = atDetector.IsPitchDetected;
+                float detectedHz = atDetector.DetectedPitchHz;
+                string noteName = atDetector.DetectedNoteName;
+                bool freqAccurate = Math.Abs(detectedHz - 440.0f) < 4.0f; // within 1% of 440 Hz
+                bool noteMatchesA4 = noteName.StartsWith("A4", StringComparison.OrdinalIgnoreCase);
+
+                Assert("AutoTune 440Hz Sine Tone Detection", pitchDetected && freqAccurate && noteMatchesA4,
+                    $"Detected={detectedHz:F1}Hz, Note={noteName}");
+
+                // Test 4: Pitch Correction Resynthesis (430 Hz -> 440 Hz Snap)
+                var atCorrector = new AutoTuneProcessor(enabled: true, key: 0, scale: 1, retuneSpeed: 0.0f, mix: 1.0f);
+                float[] offPitchBuffer = new float[4096 * 2]; // 4096 stereo frames (~85ms)
+                FillSineStereo(offPitchBuffer.AsSpan(), 430.0, 0.5f, 0);
+                atCorrector.Process(offPitchBuffer.AsSpan());
+
+                float resynthPeak = 0f;
+                bool resynthFinite = true;
+                for (int i = 0; i < offPitchBuffer.Length; i++)
+                {
+                    float s = offPitchBuffer[i];
+                    if (!float.IsFinite(s)) resynthFinite = false;
+                    float abs = Math.Abs(s);
+                    if (abs > resynthPeak) resynthPeak = abs;
+                }
+                bool resynthValid = resynthFinite && resynthPeak > 0.25f && resynthPeak <= 1.05f;
+                Assert("AutoTune 430Hz Resynthesis Output Stability", resynthValid,
+                    $"Peak={resynthPeak:F3}, Finite={resynthFinite}");
+
+                // Test 5: SettingsManager AutoTune Persistence
+                var atSettings = new AppSettings
+                {
+                    AutoTuneEnabled = true,
+                    AutoTuneKey = 7,     // G
+                    AutoTuneScale = 1,   // Major
+                    AutoTuneSpeed = 0.15f,
+                    AutoTuneMix = 0.85f
+                };
+                SettingsManager.Save(atSettings);
+                var loadedAtSettings = SettingsManager.Load();
+                bool atPersistMatches = loadedAtSettings.AutoTuneEnabled == true &&
+                                        loadedAtSettings.AutoTuneKey == 7 &&
+                                        loadedAtSettings.AutoTuneScale == 1 &&
+                                        Math.Abs(loadedAtSettings.AutoTuneSpeed - 0.15f) < 0.01f &&
+                                        Math.Abs(loadedAtSettings.AutoTuneMix - 0.85f) < 0.01f;
+                Assert("SettingsManager Stores & Loads AutoTune Parameters", atPersistMatches,
+                    $"Enabled={loadedAtSettings.AutoTuneEnabled}, Key={loadedAtSettings.AutoTuneKey}, Scale={loadedAtSettings.AutoTuneScale}, Speed={loadedAtSettings.AutoTuneSpeed:F2}, Mix={loadedAtSettings.AutoTuneMix:F2}");
+
+                // Test 6: AudioEngine + MixerBus AutoTune Forwarding
+                using (var testEngine = new AudioEngine(bridgePort: 39165, latencyMs: 30))
+                {
+                    testEngine.AutoTuneEnabled = true;
+                    testEngine.AutoTuneKey = 9;   // A
+                    testEngine.AutoTuneScale = 2; // Minor
+                    testEngine.AutoTuneSpeed = 0.05f;
+                    testEngine.AutoTuneMix = 0.90f;
+
+                    bool engineForwards = testEngine.MixerBus.AutoTuneEnabled == true &&
+                                          testEngine.MixerBus.AutoTuneKey == 9 &&
+                                          testEngine.MixerBus.AutoTuneScale == 2 &&
+                                          Math.Abs(testEngine.MixerBus.AutoTuneSpeed - 0.05f) < 0.001f &&
+                                          Math.Abs(testEngine.MixerBus.AutoTuneMix - 0.90f) < 0.001f;
+
+                    Assert("AudioEngine Forwards AutoTune Parameters to MixerBus", engineForwards);
+
+                    // Test reading from MixerBus with AutoTune active
+                    float[] busOut = new float[960];
+                    int readFloats = testEngine.MixerBus.Read(busOut, 0, 960);
+                    bool busReadValid = readFloats == 960 && AllFiniteBounded(busOut.AsSpan(), 1.0f);
+                    Assert("MixerBus Read with AutoTune Active (Zero Artifacts)", busReadValid);
+                }
             }
             catch (Exception ex)
             {

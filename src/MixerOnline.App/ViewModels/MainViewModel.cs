@@ -37,6 +37,13 @@ namespace MixerOnline.ViewModels
         private int _micDelayMs = 45;
         private int _voiceEffectMode = 0;
         private float _voiceEffectIntensity = 0.75f;
+        private bool _isAutoTuneEnabled;
+        private int _autoTuneKeyIndex;
+        private int _autoTuneScaleIndex;
+        private float _autoTuneSpeed = 0.20f;
+        private float _autoTuneMix = 1.0f;
+        private string _autoTuneNoteDisplay = "--";
+        private string _autoTuneNoteColor = "#71717a";
         private float _browserVolume = 1.0f;
         private bool _isBrowserMuted;
         private int _browserKeySemitones;
@@ -77,6 +84,7 @@ namespace MixerOnline.ViewModels
         public ICommand ToggleSampleRateModeCommand { get; }
         public ICommand SetMicDelayPresetCommand { get; }
         public ICommand SetVoiceEffectCommand { get; }
+        public ICommand ToggleAutoTuneCommand { get; }
         public ICommand PitchShiftDownCommand { get; }
         public ICommand PitchShiftUpCommand { get; }
         public ICommand ResetPitchCommand { get; }
@@ -257,6 +265,122 @@ namespace MixerOnline.ViewModels
         };
 
         public string VoiceEffectIntensityText => $"{(int)Math.Round(_voiceEffectIntensity * 100)}%";
+
+        public static readonly string[] KeyOptions =
+        {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+        };
+
+        public static readonly string[] ScaleOptions =
+        {
+            "Chromatic (All Notes)", "Major Scale", "Minor Scale"
+        };
+
+        public IReadOnlyList<string> AutoTuneKeyOptions => KeyOptions;
+        public IReadOnlyList<string> AutoTuneScaleOptions => ScaleOptions;
+
+        public bool IsAutoTuneEnabled
+        {
+            get => _isAutoTuneEnabled;
+            set
+            {
+                if (SetProperty(ref _isAutoTuneEnabled, value))
+                {
+                    _engine.AutoTuneEnabled = value;
+                    _settings.AutoTuneEnabled = value;
+                    OnPropertyChanged(nameof(AutoTuneStatusText));
+                    SaveSettings();
+                }
+            }
+        }
+
+        public string AutoTuneStatusText => _isAutoTuneEnabled ? "ON" : "OFF";
+
+        public int AutoTuneKeyIndex
+        {
+            get => _autoTuneKeyIndex;
+            set
+            {
+                int clamped = Math.Clamp(value, 0, 11);
+                if (SetProperty(ref _autoTuneKeyIndex, clamped))
+                {
+                    _engine.AutoTuneKey = clamped;
+                    _settings.AutoTuneKey = clamped;
+                    SaveSettings();
+                }
+            }
+        }
+
+        public int AutoTuneScaleIndex
+        {
+            get => _autoTuneScaleIndex;
+            set
+            {
+                int clamped = Math.Clamp(value, 0, 2);
+                if (SetProperty(ref _autoTuneScaleIndex, clamped))
+                {
+                    _engine.AutoTuneScale = clamped;
+                    _settings.AutoTuneScale = clamped;
+                    SaveSettings();
+                }
+            }
+        }
+
+        public float AutoTuneSpeed
+        {
+            get => _autoTuneSpeed;
+            set
+            {
+                float sanitized = float.IsFinite(value) ? value : 0.20f;
+                float clamped = Math.Clamp(sanitized, 0.0f, 1.0f);
+                if (SetProperty(ref _autoTuneSpeed, clamped))
+                {
+                    _engine.AutoTuneSpeed = clamped;
+                    _settings.AutoTuneSpeed = clamped;
+                    OnPropertyChanged(nameof(AutoTuneSpeedText));
+                    SaveSettings();
+                }
+            }
+        }
+
+        public string AutoTuneSpeedText => _autoTuneSpeed switch
+        {
+            <= 0.05f => "Hard Snap",
+            <= 0.25f => "Fast (Tune)",
+            <= 0.60f => "Natural",
+            _ => "Soft"
+        };
+
+        public float AutoTuneMix
+        {
+            get => _autoTuneMix;
+            set
+            {
+                float sanitized = float.IsFinite(value) ? value : 1.0f;
+                float clamped = Math.Clamp(sanitized, 0.0f, 1.0f);
+                if (SetProperty(ref _autoTuneMix, clamped))
+                {
+                    _engine.AutoTuneMix = clamped;
+                    _settings.AutoTuneMix = clamped;
+                    OnPropertyChanged(nameof(AutoTuneMixText));
+                    SaveSettings();
+                }
+            }
+        }
+
+        public string AutoTuneMixText => $"{(int)Math.Round(_autoTuneMix * 100)}%";
+
+        public string AutoTuneNoteDisplay
+        {
+            get => _autoTuneNoteDisplay;
+            private set => SetProperty(ref _autoTuneNoteDisplay, value);
+        }
+
+        public string AutoTuneNoteColor
+        {
+            get => _autoTuneNoteColor;
+            private set => SetProperty(ref _autoTuneNoteColor, value);
+        }
 
         public float BrowserVolume
         {
@@ -547,6 +671,7 @@ namespace MixerOnline.ViewModels
                     VoiceEffectMode = mode;
                 }
             });
+            ToggleAutoTuneCommand = new RelayCommand(() => IsAutoTuneEnabled = !IsAutoTuneEnabled);
             PitchShiftDownCommand = new RelayCommand(() => BrowserKeySemitones--);
             PitchShiftUpCommand = new RelayCommand(() => BrowserKeySemitones++);
             ResetPitchCommand = new RelayCommand(() => BrowserKeySemitones = 0);
@@ -569,6 +694,15 @@ namespace MixerOnline.ViewModels
             _voiceEffectIntensity = float.IsFinite(_settings.VoiceEffectIntensity)
                 ? Math.Clamp(_settings.VoiceEffectIntensity, 0.0f, 1.0f)
                 : 0.75f;
+            _isAutoTuneEnabled = _settings.AutoTuneEnabled;
+            _autoTuneKeyIndex = Math.Clamp(_settings.AutoTuneKey, 0, 11);
+            _autoTuneScaleIndex = Math.Clamp(_settings.AutoTuneScale, 0, 2);
+            _autoTuneSpeed = float.IsFinite(_settings.AutoTuneSpeed)
+                ? Math.Clamp(_settings.AutoTuneSpeed, 0.0f, 1.0f)
+                : 0.20f;
+            _autoTuneMix = float.IsFinite(_settings.AutoTuneMix)
+                ? Math.Clamp(_settings.AutoTuneMix, 0.0f, 1.0f)
+                : 1.0f;
             _browserVolume = _settings.BrowserVolume;
             _isBrowserMuted = _settings.IsBrowserMuted;
             _browserKeySemitones = _settings.BrowserKeySemitones;
@@ -583,6 +717,11 @@ namespace MixerOnline.ViewModels
             _engine.MicDelayMs = _micDelayMs;
             _engine.VoiceEffectMode = _voiceEffectMode;
             _engine.VoiceEffectIntensity = _voiceEffectIntensity;
+            _engine.AutoTuneEnabled = _isAutoTuneEnabled;
+            _engine.AutoTuneKey = _autoTuneKeyIndex;
+            _engine.AutoTuneScale = _autoTuneScaleIndex;
+            _engine.AutoTuneSpeed = _autoTuneSpeed;
+            _engine.AutoTuneMix = _autoTuneMix;
             _engine.MixerBus.BrowserVolume = _browserVolume;
             _engine.MixerBus.IsBrowserMuted = _isBrowserMuted;
             _engine.BrowserPitchSemitones = _browserKeySemitones;
@@ -648,6 +787,22 @@ namespace MixerOnline.ViewModels
             MasterPeakL = _engine.MixerBus.MasterPeakLeft;
             MasterPeakR = _engine.MixerBus.MasterPeakRight;
             MasterRms = _engine.MixerBus.MasterRms;
+
+            if (!_engine.AutoTuneEnabled)
+            {
+                AutoTuneNoteDisplay = "OFF";
+                AutoTuneNoteColor = "#52525b";
+            }
+            else if (_engine.IsPitchDetected)
+            {
+                AutoTuneNoteDisplay = _engine.DetectedNoteName;
+                AutoTuneNoteColor = "#38bdf8";
+            }
+            else
+            {
+                AutoTuneNoteDisplay = "--";
+                AutoTuneNoteColor = "#71717a";
+            }
         }
 
         private static bool IsHighLatencyVirtualEnhancer(string name)

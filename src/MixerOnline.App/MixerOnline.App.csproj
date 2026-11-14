@@ -11,7 +11,7 @@
     <ApplicationTitle>MixerOnline [BETA]</ApplicationTitle>
     <AssemblyTitle>MixerOnline Beta — Windows Desktop Audio Mixer</AssemblyTitle>
     <Product>MixerOnline Beta</Product>
-    <Version>1.1.0-beta</Version>
+    <Version>1.2.0-beta</Version>
     <Company>MixerOnline</Company>
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>

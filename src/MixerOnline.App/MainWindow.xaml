@@ -40,8 +40,8 @@
                         <Image Source="Resources/app.png" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <TextBlock Text="MixerOnline" FontSize="14" FontWeight="SemiBold" Foreground="#f4f4f5" VerticalAlignment="Center"/>
                         <TextBlock Text="Studio" FontSize="13" FontWeight="Normal" Foreground="#52525b" Margin="6,0,0,0" VerticalAlignment="Center"/>
-                        <Border Background="#1e1e24" BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" FontFamily="Consolas" Foreground="#a1a1aa"/>
+                        <Border Background="#1e1e24" BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="3" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding AppVersionBadgeText}" FontSize="9" FontWeight="Bold" FontFamily="Consolas" Foreground="#a1a1aa"/>
                         </Border>
                     </StackPanel>
 

@@ -86,6 +86,7 @@ namespace MixerOnline.ViewModels
         public Action? RequestOpenUpdate { get; set; }
 
         public string AppVersion => MixerOnline.Views.SettingsDialog.CurrentAppVersion;
+        public string AppVersionBadgeText => $"v{AppVersion}";
 
         public bool IsUpdateAvailable
         {

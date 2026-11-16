@@ -22,8 +22,8 @@
 MixerOnline Beta ships as a portable, self-contained Windows x64 application paired with a Manifest V3 Chromium extension. No .NET runtime or Visual Studio installation is required.
 
 ### 1. Download the Beta Release Archive
-1. Open the **Releases** page on GitHub and download `MixerOnline-beta-v1.2.2-win-x64.zip`.
-2. Extract the archive into a permanent folder (referred to below as `<extracted-folder>`).
+1. Open the **Releases** page on GitHub and download `MixerOnline-beta.zip`.
+2. Extract the archive into a permanent folder (e.g. `MixerOnline-beta`).
 
 ### 2. Install VB-Audio Virtual Cable (One-Time Setup)
 Windows requires a virtual audio driver so Discord, OBS, or Zoom can receive MixerOnline's output as a microphone source.

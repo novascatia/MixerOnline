@@ -33,7 +33,7 @@
             </Grid>
 
             <!-- Content Area -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,-8,0" Padding="0,0,8,0">
                 <StackPanel>
 
                     <!-- Audio Latency / Buffer -->

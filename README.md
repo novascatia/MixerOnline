@@ -1,12 +1,12 @@
 <p align="center"><img src="docs/assets/banner.png" alt="MixerOnline" width="840" /></p>
 
 <p align="center">
-  MixerOnline Beta (`v1.2.1-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with real-time vocal Auto-Tune, zero-latency Voice FX, configurable Cue Loopback monitoring, GitHub Releases auto-update system, and Chromium tab audio isolation.
+  MixerOnline Beta (`v1.2.2-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with real-time vocal Auto-Tune, zero-latency Voice FX, configurable Cue Loopback monitoring, GitHub Releases auto-update system, and Chromium tab audio isolation.
 </p>
 
 <p align="center">
   <a href="#download--install-no-coding-required">Download &amp; Install</a> &middot;
-  <a href="#whats-new-in-beta-v121-beta">What's New in Beta</a> &middot;
+  <a href="#whats-new-in-beta-v122-beta">What's New in Beta</a> &middot;
   <a href="#core-features">Core Features</a> &middot;
   <a href="#calibrating-mic-sync-delay">Calibrating Mic Sync Delay</a> &middot;
   <a href="docs/SETUP_GUIDE.md">Setup Guide</a> &middot;
@@ -22,7 +22,7 @@
 MixerOnline Beta ships as a portable, self-contained Windows x64 application paired with a Manifest V3 Chromium extension. No .NET runtime or Visual Studio installation is required.
 
 ### 1. Download the Beta Release Archive
-1. Open the **Releases** page on GitHub and download `MixerOnline-beta-v1.2.1-win-x64.zip`.
+1. Open the **Releases** page on GitHub and download `MixerOnline-beta-v1.2.2-win-x64.zip`.
 2. Extract the archive into a permanent folder (referred to below as `<extracted-folder>`).
 
 ### 2. Install VB-Audio Virtual Cable (One-Time Setup)
@@ -59,6 +59,22 @@ Load `<extracted-folder>\extension` in **any supported Chromium browser**:
    ```text
    CABLE Output (VB-Audio Virtual Cable)
    ```
+
+---
+
+## What's New in Beta (`v1.2.2-beta`)
+
+### Collapsible Voice FX & Auto-Tune Cards
+Microphone channel (02) clutter is now solved with collapsible module cards:
+- **Collapsible Voice FX & Auto-Tune:** Both Voice FX and Auto-Tune can now be minimized into sleek, compact single-line headers showing live preset status and detected musical note. Clicking anywhere on the module header or chevron toggles expand/collapse.
+- **Preference Persistence:** Collapsed/minimized states are automatically remembered and restored between sessions in `%APPDATA%\MixerOnline-beta\beta-settings.json`.
+
+### Modern Dark Minimalist Scrollbar
+- Fixed the stark white Windows desktop scrollbar mismatch in the **Settings** dialog. Implemented a custom dark graphite WPF ScrollBar (`#27272a` rounded thumb, transparent track, hover to `#3f3f46`) that perfectly matches the studio aesthetic.
+
+### Cleaned Toolbar & In-App Auto-Update Verification
+- Removed the redundant "Extension Folder" and "Browser Extensions" buttons from the bottom status bar for an uncluttered layout.
+- Fully wired for testing the new automated GitHub Releases update delivery system from `v1.2.1-beta`.
 
 ---
 

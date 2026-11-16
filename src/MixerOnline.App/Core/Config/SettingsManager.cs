@@ -71,6 +71,8 @@ namespace MixerOnline.Core.Config
             public int AutoTuneScale { get; set; }
             public float AutoTuneSpeed { get; set; } = 0.20f;
             public float AutoTuneMix { get; set; } = 1.0f;
+            public bool IsVoiceFxExpanded { get; set; }
+            public bool IsAutoTuneExpanded { get; set; }
         }
 
         public static AppSettings Load()
@@ -115,6 +117,8 @@ namespace MixerOnline.Core.Config
                             settings.AutoTuneScale = extras.AutoTuneScale;
                             settings.AutoTuneSpeed = extras.AutoTuneSpeed;
                             settings.AutoTuneMix = extras.AutoTuneMix;
+                            settings.IsVoiceFxExpanded = extras.IsVoiceFxExpanded;
+                            settings.IsAutoTuneExpanded = extras.IsAutoTuneExpanded;
                         }
                     }
                 }
@@ -171,7 +175,9 @@ namespace MixerOnline.Core.Config
                     : 0.20f,
                 AutoTuneMix = float.IsFinite(settings.AutoTuneMix)
                     ? Math.Clamp(settings.AutoTuneMix, 0f, 1f)
-                    : 1.0f
+                    : 1.0f,
+                IsVoiceFxExpanded = settings.IsVoiceFxExpanded,
+                IsAutoTuneExpanded = settings.IsAutoTuneExpanded
             };
 
             lock (IoLock)

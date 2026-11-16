@@ -310,145 +310,184 @@
                             <!-- Voice FX -->
                             <Border Background="#0c0c0e" BorderBrush="#1f1f23" BorderThickness="1" CornerRadius="5" Padding="10,8" Margin="0,0,0,8">
                                 <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="Voice FX" FontSize="11" FontWeight="Medium" Foreground="#a1a1aa" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding VoiceEffectStatusText}" FontFamily="Consolas" FontSize="11"
-                                                   FontWeight="SemiBold" Foreground="#e4e4e7" VerticalAlignment="Center"/>
-                                    </Grid>
+                                    <Button Command="{Binding ToggleVoiceFxExpandedCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0" HorizontalContentAlignment="Stretch">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Grid Background="Transparent">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="8"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Voice FX" FontSize="11" FontWeight="Medium" Foreground="#a1a1aa" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding VoiceEffectStatusText}" FontFamily="Consolas" FontSize="11"
+                                                               FontWeight="SemiBold" Foreground="#e4e4e7" VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="3" Width="18" Height="18" Background="#141418" BorderBrush="#27272a" BorderThickness="1" CornerRadius="3" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding VoiceFxChevron}" FontFamily="Consolas" FontSize="9"
+                                                                   Foreground="#a1a1aa" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
 
-                                    <UniformGrid Columns="3" Margin="0,6,0,6">
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Clean"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxOff, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="0"
-                                                     ToolTip="Clean unprocessed microphone signal"/>
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Room Isolate"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxRoomIsolate, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="1"
-                                                     ToolTip="Tight vocal booth isolation (reduces room rumble and bleed)"/>
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Echo"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxEcho, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="2"
-                                                     ToolTip="Warm vocal delay echo"/>
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Telephone"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxTelephone, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="3"
-                                                     ToolTip="Band-limited vintage telephone voice filter"/>
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Radio"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxRadio, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="4"
-                                                     ToolTip="Broadcast radio presence and warm saturation"/>
-                                        <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Hall"
-                                                     GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
-                                                     IsChecked="{Binding IsVoiceFxHall, Mode=OneWay}"
-                                                     Command="{Binding SetVoiceEffectCommand}" CommandParameter="5"
-                                                     ToolTip="Spacious concert hall reverb"/>
-                                    </UniformGrid>
+                                    <!-- Collapsible Voice FX Content -->
+                                    <StackPanel Visibility="{Binding VoiceFxContentVisibility}" Margin="0,8,0,0">
+                                        <UniformGrid Columns="3" Margin="0,0,0,6">
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Clean"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxOff, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="0"
+                                                         ToolTip="Clean unprocessed microphone signal"/>
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Room Isolate"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxRoomIsolate, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="1"
+                                                         ToolTip="Tight vocal booth isolation (reduces room rumble and bleed)"/>
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Echo"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxEcho, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="2"
+                                                         ToolTip="Warm vocal delay echo"/>
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Telephone"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxTelephone, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="3"
+                                                         ToolTip="Band-limited vintage telephone voice filter"/>
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Radio"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxRadio, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="4"
+                                                         ToolTip="Broadcast radio presence and warm saturation"/>
+                                            <RadioButton Style="{StaticResource ConsoleChipRadioButton}" Content="Hall"
+                                                         GroupName="VoiceFxGroup" Margin="2" Padding="4,2"
+                                                         IsChecked="{Binding IsVoiceFxHall, Mode=OneWay}"
+                                                         Command="{Binding SetVoiceEffectCommand}" CommandParameter="5"
+                                                         ToolTip="Spacious concert hall reverb"/>
+                                        </UniformGrid>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="34"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="FX Mix" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
-                                                Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
-                                                Value="{Binding VoiceEffectIntensity, Mode=TwoWay}"
-                                                VerticalAlignment="Center"
-                                                ToolTip="Blend intensity of the active voice effect (0% to 100%)"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding VoiceEffectIntensityText}" FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                                    </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="34"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="FX Mix" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
+                                                    Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                                    Value="{Binding VoiceEffectIntensity, Mode=TwoWay}"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Blend intensity of the active voice effect (0% to 100%)"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding VoiceEffectIntensityText}" FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 
                             <!-- Vocal Auto-Tune -->
                             <Border Background="#0c0c0e" BorderBrush="#1f1f23" BorderThickness="1" CornerRadius="5" Padding="10,8" Margin="0,0,0,8">
                                 <StackPanel>
-                                    <Grid Margin="0,0,0,4">
+                                    <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="6"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="Auto-Tune" FontSize="11" FontWeight="Medium" Foreground="#a1a1aa"/>
-                                            <TextBlock Text=" (Pitch Correct)" FontSize="9" Foreground="#52525b" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                        <Button Command="{Binding ToggleAutoTuneExpandedCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Left">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="Transparent">
+                                                        <TextBlock Text="Auto-Tune" FontSize="11" FontWeight="Medium" Foreground="#a1a1aa"/>
+                                                        <TextBlock Text=" (Pitch Correct)" FontSize="9" Foreground="#52525b" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+
                                         <Border Grid.Column="1" Background="#141418" BorderBrush="#27272a" BorderThickness="1" CornerRadius="3" Padding="6,1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding AutoTuneNoteDisplay}" FontFamily="Consolas" FontSize="10" FontWeight="Bold" Foreground="{Binding AutoTuneNoteColor}"/>
                                         </Border>
+                                        
                                         <ToggleButton Grid.Column="3" Style="{StaticResource ConsoleCueButton}"
                                                       IsChecked="{Binding IsAutoTuneEnabled, Mode=TwoWay}"
                                                       ToolTip="Toggle real-time vocal Auto-Tune pitch correction"/>
+
+                                        <Button Grid.Column="5" Command="{Binding ToggleAutoTuneExpandedCommand}" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0" ToolTip="Expand / Minimize Auto-Tune controls">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Width="18" Height="18" Background="#141418" BorderBrush="#27272a" BorderThickness="1" CornerRadius="3" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding AutoTuneChevron}" FontFamily="Consolas" FontSize="9"
+                                                                   Foreground="#a1a1aa" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
                                     </Grid>
 
-                                    <!-- Key & Scale Selectors -->
-                                    <Grid Margin="0,3,0,5">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="6"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Root Key:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
-                                            <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
-                                                      ItemsSource="{Binding AutoTuneKeyOptions}"
-                                                      SelectedIndex="{Binding AutoTuneKeyIndex, Mode=TwoWay}"
-                                                      ToolTip="Root key (C, C#, D...) for pitch quantization"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="2">
-                                            <TextBlock Text="Scale:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
-                                            <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
-                                                      ItemsSource="{Binding AutoTuneScaleOptions}"
-                                                      SelectedIndex="{Binding AutoTuneScaleIndex, Mode=TwoWay}"
-                                                      ToolTip="Target scale (Chromatic, Major, Minor)"/>
-                                        </StackPanel>
-                                    </Grid>
+                                    <!-- Collapsible Auto-Tune Content -->
+                                    <StackPanel Visibility="{Binding AutoTuneContentVisibility}" Margin="0,8,0,0">
+                                        <!-- Key & Scale Selectors -->
+                                        <Grid Margin="0,0,0,5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="6"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Root Key:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
+                                                <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
+                                                          ItemsSource="{Binding AutoTuneKeyOptions}"
+                                                          SelectedIndex="{Binding AutoTuneKeyIndex, Mode=TwoWay}"
+                                                          ToolTip="Root key (C, C#, D...) for pitch quantization"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Scale:" FontSize="9" Foreground="#52525b" Margin="0,0,0,2"/>
+                                                <ComboBox Style="{StaticResource ModernComboBox}" Height="26" FontSize="11" Padding="6,2"
+                                                          ItemsSource="{Binding AutoTuneScaleOptions}"
+                                                          SelectedIndex="{Binding AutoTuneScaleIndex, Mode=TwoWay}"
+                                                          ToolTip="Target scale (Chromatic, Major, Minor)"/>
+                                            </StackPanel>
+                                        </Grid>
 
-                                    <!-- Retune Speed Slider (Hard Snap vs Natural) -->
-                                    <Grid Margin="0,2,0,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="64"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Speed" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
-                                                Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
-                                                Value="{Binding AutoTuneSpeed, Mode=TwoWay}"
-                                                VerticalAlignment="Center"
-                                                ToolTip="Retune Speed: 0% = Hard Snap (Cher/T-Pain robotic effect), 100% = Soft Natural"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding AutoTuneSpeedText}" FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                                    </Grid>
+                                        <!-- Retune Speed Slider (Hard Snap vs Natural) -->
+                                        <Grid Margin="0,2,0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="64"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Speed" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
+                                                    Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                                    Value="{Binding AutoTuneSpeed, Mode=TwoWay}"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Retune Speed: 0% = Hard Snap (Cher/T-Pain robotic effect), 100% = Soft Natural"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding AutoTuneSpeedText}" FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                        </Grid>
 
-                                    <!-- Auto-Tune Mix Slider -->
-                                    <Grid Margin="0,1,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="34"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="Mix" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                                        <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
-                                                Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
-                                                Value="{Binding AutoTuneMix, Mode=TwoWay}"
-                                                VerticalAlignment="Center"
-                                                ToolTip="Auto-Tune dry/wet blend intensity (0% to 100%)"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding AutoTuneMixText}" FontFamily="Consolas" FontSize="10"
-                                                   Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                                    </Grid>
+                                        <!-- Auto-Tune Mix Slider -->
+                                        <Grid Margin="0,1,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="34"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Mix" FontSize="9" Foreground="#52525b" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                            <Slider Grid.Column="1" Style="{StaticResource ConsoleHorizontalSlider}"
+                                                    Minimum="0" Maximum="1" SmallChange="0.05" LargeChange="0.1"
+                                                    Value="{Binding AutoTuneMix, Mode=TwoWay}"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="Auto-Tune dry/wet blend intensity (0% to 100%)"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding AutoTuneMixText}" FontFamily="Consolas" FontSize="10"
+                                                       Foreground="#a1a1aa" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 
@@ -612,7 +651,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="48.0 kHz • 32-Bit Float" FontFamily="Consolas, monospace" FontSize="11" 
@@ -620,13 +658,6 @@
 
                     <TextBlock Grid.Column="1" Text="{Binding StatusText}" Foreground="#a1a1aa" FontSize="11" 
                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="16,0"/>
-
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Style="{StaticResource ModernButton}" Command="{Binding OpenExtensionFolderCommand}" 
-                                Content="Extension Folder" Margin="0,0,6,0" Padding="10,4" FontSize="11"/>
-                        <Button Style="{StaticResource ModernButton}" Command="{Binding OpenBraveExtensionsCommand}" 
-                                Content="Browser Extensions" Padding="10,4" FontSize="11"/>
-                    </StackPanel>
                 </Grid>
             </Border>
 

@@ -39,7 +39,9 @@ namespace MixerOnline.ViewModels
         private int _micDelayMs = 45;
         private int _voiceEffectMode = 0;
         private float _voiceEffectIntensity = 0.75f;
+        private bool _isVoiceFxExpanded;
         private bool _isAutoTuneEnabled;
+        private bool _isAutoTuneExpanded;
         private int _autoTuneKeyIndex;
         private int _autoTuneScaleIndex;
         private float _autoTuneSpeed = 0.20f;
@@ -83,7 +85,7 @@ namespace MixerOnline.ViewModels
 
         public Action? RequestOpenUpdate { get; set; }
 
-        public string AppVersion => "1.2.1-beta";
+        public string AppVersion => "1.2.2-beta";
 
         public bool IsUpdateAvailable
         {
@@ -122,7 +124,9 @@ namespace MixerOnline.ViewModels
         public ICommand ToggleSampleRateModeCommand { get; }
         public ICommand SetMicDelayPresetCommand { get; }
         public ICommand SetVoiceEffectCommand { get; }
+        public ICommand ToggleVoiceFxExpandedCommand { get; }
         public ICommand ToggleAutoTuneCommand { get; }
+        public ICommand ToggleAutoTuneExpandedCommand { get; }
         public ICommand PitchShiftDownCommand { get; }
         public ICommand PitchShiftUpCommand { get; }
         public ICommand ResetPitchCommand { get; }
@@ -305,6 +309,24 @@ namespace MixerOnline.ViewModels
 
         public string VoiceEffectIntensityText => $"{(int)Math.Round(_voiceEffectIntensity * 100)}%";
 
+        public bool IsVoiceFxExpanded
+        {
+            get => _isVoiceFxExpanded;
+            set
+            {
+                if (SetProperty(ref _isVoiceFxExpanded, value))
+                {
+                    OnPropertyChanged(nameof(VoiceFxContentVisibility));
+                    OnPropertyChanged(nameof(VoiceFxChevron));
+                    _settings.IsVoiceFxExpanded = value;
+                    SaveSettings();
+                }
+            }
+        }
+
+        public Visibility VoiceFxContentVisibility => _isVoiceFxExpanded ? Visibility.Visible : Visibility.Collapsed;
+        public string VoiceFxChevron => _isVoiceFxExpanded ? "▲" : "▼";
+
         public static readonly string[] KeyOptions =
         {
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
@@ -408,6 +430,24 @@ namespace MixerOnline.ViewModels
         }
 
         public string AutoTuneMixText => $"{(int)Math.Round(_autoTuneMix * 100)}%";
+
+        public bool IsAutoTuneExpanded
+        {
+            get => _isAutoTuneExpanded;
+            set
+            {
+                if (SetProperty(ref _isAutoTuneExpanded, value))
+                {
+                    OnPropertyChanged(nameof(AutoTuneContentVisibility));
+                    OnPropertyChanged(nameof(AutoTuneChevron));
+                    _settings.IsAutoTuneExpanded = value;
+                    SaveSettings();
+                }
+            }
+        }
+
+        public Visibility AutoTuneContentVisibility => _isAutoTuneExpanded ? Visibility.Visible : Visibility.Collapsed;
+        public string AutoTuneChevron => _isAutoTuneExpanded ? "▲" : "▼";
 
         public string AutoTuneNoteDisplay
         {
@@ -710,7 +750,9 @@ namespace MixerOnline.ViewModels
                     VoiceEffectMode = mode;
                 }
             });
+            ToggleVoiceFxExpandedCommand = new RelayCommand(() => IsVoiceFxExpanded = !IsVoiceFxExpanded);
             ToggleAutoTuneCommand = new RelayCommand(() => IsAutoTuneEnabled = !IsAutoTuneEnabled);
+            ToggleAutoTuneExpandedCommand = new RelayCommand(() => IsAutoTuneExpanded = !IsAutoTuneExpanded);
             PitchShiftDownCommand = new RelayCommand(() => BrowserKeySemitones--);
             PitchShiftUpCommand = new RelayCommand(() => BrowserKeySemitones++);
             ResetPitchCommand = new RelayCommand(() => BrowserKeySemitones = 0);
@@ -734,7 +776,9 @@ namespace MixerOnline.ViewModels
             _voiceEffectIntensity = float.IsFinite(_settings.VoiceEffectIntensity)
                 ? Math.Clamp(_settings.VoiceEffectIntensity, 0.0f, 1.0f)
                 : 0.75f;
+            _isVoiceFxExpanded = _settings.IsVoiceFxExpanded;
             _isAutoTuneEnabled = _settings.AutoTuneEnabled;
+            _isAutoTuneExpanded = _settings.IsAutoTuneExpanded;
             _autoTuneKeyIndex = Math.Clamp(_settings.AutoTuneKey, 0, 11);
             _autoTuneScaleIndex = Math.Clamp(_settings.AutoTuneScale, 0, 2);
             _autoTuneSpeed = float.IsFinite(_settings.AutoTuneSpeed)

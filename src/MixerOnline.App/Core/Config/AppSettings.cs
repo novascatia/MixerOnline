@@ -32,6 +32,9 @@ namespace MixerOnline.Core.Config
         public float AutoTuneSpeed { get; set; } = 0.20f; // 0.0 (Hard Snap) .. 1.0 (Soft Natural)
         public float AutoTuneMix { get; set; } = 1.0f; // 0.0 (Dry) .. 1.0 (Wet)
 
+        public bool IsVoiceFxExpanded { get; set; } = false;
+        public bool IsAutoTuneExpanded { get; set; } = false;
+
         public int LatencyMs { get; set; } = 30;
         public int BridgePort { get; set; } = 49876;
 

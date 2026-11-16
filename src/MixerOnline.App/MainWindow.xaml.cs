@@ -20,6 +20,7 @@ namespace MixerOnline
 
             ViewModel.RequestOpenSettings = OpenSettingsDialog;
             ViewModel.RequestOpenGuide = OpenGuideDialog;
+            ViewModel.RequestOpenUpdate = OpenUpdateDialog;
 
             InitializeTrayIcon();
         }
@@ -165,6 +166,18 @@ namespace MixerOnline
                 Owner = this
             };
             dialog.ShowDialog();
+        }
+
+        private void OpenUpdateDialog()
+        {
+            if (ViewModel.AvailableRelease != null)
+            {
+                var dialog = new UpdateDialog(ViewModel.AvailableRelease, ViewModel.AppVersion, isBeta: true)
+                {
+                    Owner = this
+                };
+                dialog.ShowDialog();
+            }
         }
     }
 }

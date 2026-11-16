@@ -57,6 +57,8 @@ namespace MixerOnline.Core.Config
             public bool MinimizeToTray { get; set; } = true;
             public bool AutoReconnect { get; set; } = true;
             public bool HearTabInBrowser { get; set; } = true;
+            public bool AutoCheckForUpdates { get; set; } = true;
+            public bool CheckForBetaUpdates { get; set; } = true;
         }
 
         private sealed class BetaExtras
@@ -149,7 +151,9 @@ namespace MixerOnline.Core.Config
                 BridgePort = settings.BridgePort,
                 MinimizeToTray = settings.MinimizeToTray,
                 AutoReconnect = settings.AutoReconnect,
-                HearTabInBrowser = settings.HearTabInBrowser
+                HearTabInBrowser = settings.HearTabInBrowser,
+                AutoCheckForUpdates = settings.AutoCheckForUpdates,
+                CheckForBetaUpdates = settings.CheckForBetaUpdates
             };
 
             var betaExtras = new BetaExtras

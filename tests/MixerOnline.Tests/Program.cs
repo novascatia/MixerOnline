@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MixerOnline.Core.Audio;
 using MixerOnline.Core.Config;
 using MixerOnline.Core.Network;
+using MixerOnline.Core.Update;
 using MixerOnline.Core.Utils;
 
 namespace MixerOnline.Tests
@@ -1096,6 +1097,67 @@ namespace MixerOnline.Tests
             {
                 Assert("AudioEngine VoiceFX Integration Exception", false, ex.Message);
             }
+
+            // ==========================================
+            // AUTO-UPDATE & SEMANTIC VERSION TESTS (v1.2.1-beta)
+            // ==========================================
+            Console.WriteLine();
+            Console.WriteLine("--- Section 12: Auto-Update System & SemVer Tests ---");
+
+            // Test 1: SemVer Parsing
+            bool semParse1 = SemanticVersion.TryParse("1.2.1", out var v1) && v1.Major == 1 && v1.Minor == 2 && v1.Patch == 1 && !v1.IsPreRelease;
+            bool semParse2 = SemanticVersion.TryParse("v1.2.1-beta", out var v2) && v2.Major == 1 && v2.Minor == 2 && v2.Patch == 1 && v2.IsPreRelease && v2.PreReleaseTag == "beta";
+            bool semParse3 = SemanticVersion.TryParse("v2.0.0-rc.1", out var v3) && v3.Major == 2 && v3.Minor == 0 && v3.Patch == 0 && v3.IsPreRelease && v3.PreReleaseTag == "rc.1";
+            bool semParseInvalid = !SemanticVersion.TryParse("invalid-version", out _);
+            Assert("SemanticVersion.TryParse Valid & Invalid Strings", semParse1 && semParse2 && semParse3 && semParseInvalid,
+                $"v1={v1}, v2={v2}, v3={v3}");
+
+            // Test 2: SemVer Comparisons & Precedence
+            var v120 = SemanticVersion.Parse("1.2.0");
+            var v121Beta = SemanticVersion.Parse("v1.2.1-beta");
+            var v121 = SemanticVersion.Parse("1.2.1");
+            var v122Beta = SemanticVersion.Parse("1.2.2-beta");
+            var v121BetaUpper = SemanticVersion.Parse("v1.2.1-BETA");
+
+            bool comp1 = v121Beta > v120; // 1.2.1-beta > 1.2.0
+            bool comp2 = v121 > v121Beta; // 1.2.1 (stable) > 1.2.1-beta (pre-release)
+            bool comp3 = v122Beta > v121Beta; // 1.2.2-beta > 1.2.1-beta
+            bool comp4 = v121Beta == v121BetaUpper; // Case-insensitive tag equality
+            bool comp5 = v121 == SemanticVersion.Parse("v1.2.1"); // Tag prefix normalization
+            Assert("SemanticVersion Ordering & SemVer Precedence", comp1 && comp2 && comp3 && comp4 && comp5,
+                $"1.2.1-beta > 1.2.0: {comp1}, 1.2.1 > 1.2.1-beta: {comp2}, 1.2.2-beta > 1.2.1-beta: {comp3}");
+
+            // Test 3: SettingsManager Update Settings Persistence
+            var updateSettings = new AppSettings
+            {
+                AutoCheckForUpdates = false,
+                CheckForBetaUpdates = false
+            };
+            SettingsManager.Save(updateSettings);
+            var loadedUpdateSettings = SettingsManager.Load();
+            bool updateSettingsPersist = loadedUpdateSettings.AutoCheckForUpdates == false &&
+                                         loadedUpdateSettings.CheckForBetaUpdates == false;
+            Assert("SettingsManager Stores & Loads Auto-Update Toggles", updateSettingsPersist,
+                $"AutoCheck={loadedUpdateSettings.AutoCheckForUpdates}, BetaCheck={loadedUpdateSettings.CheckForBetaUpdates}");
+
+            // Restore defaults
+            updateSettings.AutoCheckForUpdates = true;
+            updateSettings.CheckForBetaUpdates = true;
+            SettingsManager.Save(updateSettings);
+
+            // Test 4: UpdateService Offline Mock Check
+            var updateSvc = new UpdateService();
+            var upToDateResult = UpdateCheckResult.UpToDate("1.2.1-beta", null);
+            var availableResult = UpdateCheckResult.Available("1.2.0-beta", new UpdateReleaseInfo
+            {
+                TagName = "v1.2.1-beta",
+                Version = v121Beta,
+                DownloadUrl = "https://github.com/novascatia/MixerOnline/releases/download/v1.2.1-beta/MixerOnline-beta-v1.2.1-win-x64.zip"
+            });
+            bool checkResultValid = !upToDateResult.IsUpdateAvailable &&
+                                    availableResult.IsUpdateAvailable &&
+                                    availableResult.LatestRelease?.TagName == "v1.2.1-beta";
+            Assert("UpdateCheckResult Status & Payload Integrity", checkResultValid);
 
             Console.WriteLine("=================================================");
             Console.WriteLine($"Tests Completed: {passed + failed} | Passed: {passed} | Failed: {failed} | Skipped: {skipped}");

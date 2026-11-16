@@ -1,12 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using MixerOnline.Core.Audio;
 using MixerOnline.Core.Config;
 using MixerOnline.Core.Network;
+using MixerOnline.Core.Update;
 using MixerOnline.Core.Utils;
 using Application = System.Windows.Application;
 
@@ -73,6 +75,42 @@ namespace MixerOnline.ViewModels
         private string _statusText = "Ready";
         private string _engineStatusText = "48.0 kHz • 32-Bit Float";
 
+        // Auto-Update State
+        private readonly UpdateService _updateService = new();
+        private bool _isUpdateAvailable;
+        private string _updateAvailableButtonText = "✨ Update Available";
+        private UpdateReleaseInfo? _availableRelease;
+
+        public Action? RequestOpenUpdate { get; set; }
+
+        public string AppVersion => "1.2.1-beta";
+
+        public bool IsUpdateAvailable
+        {
+            get => _isUpdateAvailable;
+            private set
+            {
+                if (SetProperty(ref _isUpdateAvailable, value))
+                {
+                    OnPropertyChanged(nameof(UpdatePillVisibility));
+                }
+            }
+        }
+
+        public Visibility UpdatePillVisibility => _isUpdateAvailable ? Visibility.Visible : Visibility.Collapsed;
+
+        public string UpdateAvailableButtonText
+        {
+            get => _updateAvailableButtonText;
+            private set => SetProperty(ref _updateAvailableButtonText, value);
+        }
+
+        public UpdateReleaseInfo? AvailableRelease
+        {
+            get => _availableRelease;
+            private set => SetProperty(ref _availableRelease, value);
+        }
+
         // Commands
         public ICommand RefreshTabsCommand { get; }
         public ICommand RefreshDevicesCommand { get; }
@@ -91,6 +129,7 @@ namespace MixerOnline.ViewModels
         public ICommand StopTabCaptureCommand { get; }
         public ICommand OpenSettingsCommand { get; }
         public ICommand OpenGuideCommand { get; }
+        public ICommand OpenUpdateDialogCommand { get; }
         public ICommand OpenExtensionFolderCommand { get; }
         public ICommand OpenBraveExtensionsCommand { get; }
 
@@ -685,6 +724,7 @@ namespace MixerOnline.ViewModels
             OpenGuideCommand = new RelayCommand(() => RequestOpenGuide?.Invoke());
             OpenExtensionFolderCommand = new RelayCommand(OpenExtensionFolder);
             OpenBraveExtensionsCommand = new RelayCommand(OpenBraveExtensions);
+            OpenUpdateDialogCommand = new RelayCommand(OpenUpdateDialog);
 
             // Apply saved settings
             _micVolume = _settings.MicVolume;
@@ -774,6 +814,11 @@ namespace MixerOnline.ViewModels
             };
             _meterTimer.Tick += OnMeterTick;
             _meterTimer.Start();
+
+            if (_settings.AutoCheckForUpdates)
+            {
+                _ = Task.Run(CheckForUpdatesSilentlyAsync);
+            }
         }
 
         private void OnMeterTick(object? sender, EventArgs e)
@@ -1014,6 +1059,40 @@ namespace MixerOnline.ViewModels
             StatusText = launched
                 ? $"Opened {extensionsUrl} in {browserName}"
                 : $"Open {BrowserLauncher.GetExtensionsUrlSummary()} and click Load unpacked";
+        }
+
+        private void OpenUpdateDialog()
+        {
+            if (_availableRelease != null)
+            {
+                RequestOpenUpdate?.Invoke();
+            }
+            else
+            {
+                RequestOpenSettings?.Invoke();
+            }
+        }
+
+        public async Task CheckForUpdatesSilentlyAsync()
+        {
+            try
+            {
+                var result = await _updateService.CheckForUpdatesAsync(AppVersion, _settings.CheckForBetaUpdates);
+                if (result.IsUpdateAvailable && result.LatestRelease != null)
+                {
+                    RunOnUiThread(() =>
+                    {
+                        AvailableRelease = result.LatestRelease;
+                        UpdateAvailableButtonText = $"✨ {result.LatestRelease.TagName} Available";
+                        IsUpdateAvailable = true;
+                        StatusText = $"New update available: {result.LatestRelease.TagName} — click badge to install";
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UpdateCheck] Silent error: {ex.Message}");
+            }
         }
 
         private void SaveSettings()

@@ -38,5 +38,7 @@ namespace MixerOnline.Core.Config
         public bool MinimizeToTray { get; set; } = true;
         public bool AutoReconnect { get; set; } = true;
         public bool HearTabInBrowser { get; set; } = true;
+        public bool AutoCheckForUpdates { get; set; } = true;
+        public bool CheckForBetaUpdates { get; set; } = true;
     }
 }

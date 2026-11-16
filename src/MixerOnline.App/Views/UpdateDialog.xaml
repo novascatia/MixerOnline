@@ -1,0 +1,117 @@
+<Window x:Class="MixerOnline.Views.UpdateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Software Update" 
+        Height="490" Width="510"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        WindowStyle="None"
+        AllowsTransparency="True">
+
+    <Border Background="#0c0c0f" BorderBrush="#242429" BorderThickness="1" CornerRadius="8">
+        <Grid Margin="22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="8" Height="8" Background="#38bdf8" CornerRadius="2" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Software Update Available" FontSize="15" FontWeight="SemiBold" Foreground="#f4f4f5" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource WindowCloseButton}" Click="OnCloseClicked">
+                    <TextBlock Text="✕" FontSize="11"/>
+                </Button>
+            </Grid>
+
+            <!-- Content Area -->
+            <Grid Grid.Row="1" Margin="0,0,0,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Version Comparison Pill -->
+                <Border Grid.Row="0" Background="#121215" BorderBrush="#222226" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="New Version:" FontSize="11" Foreground="#71717a" Margin="0,0,6,0"/>
+                                <TextBlock x:Name="TxtLatestVersion" Text="v1.2.1-beta" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="#38bdf8"/>
+                                <TextBlock Text=" (Current: " FontSize="11" Foreground="#52525b" Margin="6,0,0,0"/>
+                                <TextBlock x:Name="TxtCurrentVersion" Text="v1.2.0-beta" FontFamily="Consolas" FontSize="11" Foreground="#71717a"/>
+                                <TextBlock Text=")" FontSize="11" Foreground="#52525b"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtReleaseMeta" Text="Published on GitHub" FontSize="10" Foreground="#52525b" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" x:Name="BadgeBeta" Background="#1e1e24" BorderBrush="#3f3f46" BorderThickness="1" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock Text="UPDATE" FontSize="9" FontWeight="Bold" FontFamily="Consolas" Foreground="#38bdf8"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Release Notes / Changelog -->
+                <Border Grid.Row="1" Background="#09090b" BorderBrush="#1f1f23" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Release Notes / Changelog:" FontSize="10" FontWeight="SemiBold" Foreground="#a1a1aa" Margin="0,0,0,6"/>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <TextBox x:Name="TxtChangelog" 
+                                     Background="Transparent" Foreground="#d4d4d8" BorderThickness="0"
+                                     IsReadOnly="True" TextWrapping="Wrap" FontSize="11" FontFamily="Consolas, monospace"
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Disabled"
+                                     CaretBrush="Transparent"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Download Progress Area (Hidden by default) -->
+            <StackPanel Grid.Row="2" x:Name="PanelProgress" Visibility="Collapsed" Margin="0,0,0,14">
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtProgressStatus" Text="Downloading update..." FontSize="11" Foreground="#a1a1aa"/>
+                    <TextBlock Grid.Column="1" x:Name="TxtProgressPercent" Text="0%" FontFamily="Consolas" FontSize="11" FontWeight="SemiBold" Foreground="#38bdf8"/>
+                </Grid>
+                <ProgressBar x:Name="ProgressDownload" Height="6" Minimum="0" Maximum="100" Value="0"
+                             Background="#18181b" Foreground="#38bdf8" BorderThickness="0"/>
+            </StackPanel>
+
+            <!-- Action Buttons -->
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Style="{StaticResource ModernButton}" Content="View on GitHub" Click="OnViewOnGitHubClicked" ToolTip="Open GitHub Releases page"/>
+                
+                <Button Grid.Column="2" Style="{StaticResource ModernButton}" Content="Later" Click="OnCloseClicked"/>
+                <Button Grid.Column="4" x:Name="BtnInstall" Style="{StaticResource AccentButton}" Content="Download &amp; Restart" Click="OnInstallClicked"
+                        Background="#38bdf8" BorderBrush="#38bdf8" Foreground="#09090b" FontWeight="SemiBold"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

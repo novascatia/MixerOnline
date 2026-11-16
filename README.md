@@ -1,12 +1,12 @@
 <p align="center"><img src="docs/assets/banner.png" alt="MixerOnline" width="840" /></p>
 
 <p align="center">
-  MixerOnline Beta (`v1.2.0-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with real-time vocal Auto-Tune, zero-latency Voice FX, configurable Cue Loopback monitoring, and Chromium tab audio isolation.
+  MixerOnline Beta (`v1.2.1-beta`) — Real-time 48 kHz 32-bit float Windows desktop audio mixer with real-time vocal Auto-Tune, zero-latency Voice FX, configurable Cue Loopback monitoring, GitHub Releases auto-update system, and Chromium tab audio isolation.
 </p>
 
 <p align="center">
   <a href="#download--install-no-coding-required">Download &amp; Install</a> &middot;
-  <a href="#whats-new-in-beta-v120-beta">What's New in Beta</a> &middot;
+  <a href="#whats-new-in-beta-v121-beta">What's New in Beta</a> &middot;
   <a href="#core-features">Core Features</a> &middot;
   <a href="#calibrating-mic-sync-delay">Calibrating Mic Sync Delay</a> &middot;
   <a href="docs/SETUP_GUIDE.md">Setup Guide</a> &middot;
@@ -22,7 +22,7 @@
 MixerOnline Beta ships as a portable, self-contained Windows x64 application paired with a Manifest V3 Chromium extension. No .NET runtime or Visual Studio installation is required.
 
 ### 1. Download the Beta Release Archive
-1. Open the **Releases** page on GitHub and download `MixerOnline-beta-v1.2.0-win-x64.zip`.
+1. Open the **Releases** page on GitHub and download `MixerOnline-beta-v1.2.1-win-x64.zip`.
 2. Extract the archive into a permanent folder (referred to below as `<extracted-folder>`).
 
 ### 2. Install VB-Audio Virtual Cable (One-Time Setup)
@@ -62,7 +62,15 @@ Load `<extracted-folder>\extension` in **any supported Chromium browser**:
 
 ---
 
-## What's New in Beta (`v1.2.0-beta`)
+## What's New in Beta (`v1.2.1-beta`)
+
+### Automated GitHub Releases Auto-Update System (`UpdateService.cs`, `UpdateApplyHelper.cs`)
+MixerOnline Beta now includes a built-in, zero-downtime automated updater that checks against the GitHub Releases API (`https://api.github.com/repos/novascatia/MixerOnline/releases`):
+- **Semantic Version Engine (`SemanticVersion.cs`):** Full SemVer 2.0 comparison supporting pre-release tags (`1.2.1 > 1.2.1-beta`, `1.2.2-beta > 1.2.1-beta`, tag prefix normalization `v1.2.1 == 1.2.1`).
+- **Interactive Update Notification Pill:** Non-intrusive cyan badge in the top header (`✨ vX.X.X Available`) appears automatically on startup when a new release or beta build is detected.
+- **Dedicated Console Update Dialog (`UpdateDialog.xaml`):** View side-by-side version comparison, Markdown release notes / changelogs, download progress bar with real-time percentage, and one-click "Download & Restart".
+- **Zero-Downtime Windows Binary Replacement (`UpdateApplyHelper.cs`):** Seamlessly solves Windows executable locking issues by executing a detached, hidden PowerShell handoff script (`apply_update.ps1`) that waits for the host PID to cleanly exit, extracts the update archive or replaces binaries, purges staging caches, and restarts the updated MixerOnline.
+- **Configurable Settings & Channel Selection:** Configure auto-check frequency and toggle beta pre-release channel updates directly in **Settings -> Software Updates**, with an instant manual "Check Now" button.
 
 ### Real-Time Vocal Auto-Tune / Pitch Correction (`AutoTuneProcessor.cs`)
 MixerOnline Beta now features a high-performance, low-latency vocal pitch correction engine built directly into the microphone signal path:

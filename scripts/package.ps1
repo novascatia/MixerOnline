@@ -12,10 +12,8 @@ $Version = $Version.TrimStart('v', 'V')
 $root = Split-Path -Parent $PSScriptRoot
 $distDir = Join-Path $root "dist"
 $exeName = "MixerOnline-beta.exe"
-$cleanArchiveName = "MixerOnline-beta.zip"
-$cleanArchivePath = Join-Path $distDir $cleanArchiveName
-$versionedArchiveName = "MixerOnline-beta-v$Version-win-x64.zip"
-$versionedArchivePath = Join-Path $distDir $versionedArchiveName
+$archiveName = "MixerOnline-beta.zip"
+$archivePath = Join-Path $distDir $archiveName
 
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "  Packaging MixerOnline Beta v$Version (win-x64)" -ForegroundColor Cyan
@@ -71,7 +69,7 @@ if (Test-Path "$root\docs") {
     Copy-Item -Recurse -Force "$root\docs" (Join-Path $distDir "docs")
 }
 
-Write-Host "`n[4/4] Creating release archive: $cleanArchiveName..." -ForegroundColor Yellow
+Write-Host "`n[4/4] Creating release archive: $archiveName..." -ForegroundColor Yellow
 $archiveItems = @(
     $publishedExe,
     $extTarget,
@@ -84,12 +82,9 @@ if (Test-Path (Join-Path $distDir "docs")) {
     $archiveItems += (Join-Path $distDir "docs")
 }
 
-Compress-Archive -Path $archiveItems -DestinationPath $cleanArchivePath -Force
-Copy-Item $cleanArchivePath $versionedArchivePath -Force
+Compress-Archive -Path $archiveItems -DestinationPath $archivePath -Force
 
 Write-Host "`nPackage created successfully in: $distDir" -ForegroundColor Green
-Write-Host "  -> Executable:        $publishedExe" -ForegroundColor White
-Write-Host "  -> Portable Archive:  $cleanArchivePath" -ForegroundColor White
-Write-Host "  -> Versioned Archive: $versionedArchivePath" -ForegroundColor White
-Write-Host "  -> Extension:         $extTarget\" -ForegroundColor White
+Write-Host "  -> Release Archive: $archivePath" -ForegroundColor White
+Write-Host "  -> Extension:       $extTarget\" -ForegroundColor White
 Write-Host "=============================================" -ForegroundColor Green

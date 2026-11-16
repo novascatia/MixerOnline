@@ -49,8 +49,7 @@ jobs:
         with:
           name: MixerOnline-beta-win-x64
           path: |
-            dist/*.zip
-            dist/*.exe
+            dist/MixerOnline-beta.zip
 
       - name: Publish GitHub Pre-Release
         if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
@@ -60,5 +59,4 @@ jobs:
           generate_release_notes: true
           prerelease: true
           files: |
-            dist/*.zip
-            dist/*.exe
+            dist/MixerOnline-beta.zip

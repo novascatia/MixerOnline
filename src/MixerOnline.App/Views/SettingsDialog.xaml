@@ -110,7 +110,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="Software Updates" FontSize="12" FontWeight="SemiBold" Foreground="#e4e4e7"/>
-                                    <TextBlock x:Name="TxtCurrentVersionLabel" Text="Installed: v1.2.1-beta" FontSize="11" Foreground="#71717a" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="TxtCurrentVersionLabel" Text="Installed: v1.2.2-beta" FontSize="11" Foreground="#71717a" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Button Grid.Column="1" x:Name="BtnCheckUpdates" Style="{StaticResource ModernButton}" Content="Check Now" Click="OnCheckUpdatesClicked"
                                         Padding="10,4" Height="26" VerticalAlignment="Center" ToolTip="Query GitHub for latest MixerOnline updates"/>

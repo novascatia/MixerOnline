@@ -85,7 +85,7 @@ namespace MixerOnline.ViewModels
 
         public Action? RequestOpenUpdate { get; set; }
 
-        public string AppVersion => "1.2.2-beta";
+        public string AppVersion => MixerOnline.Views.SettingsDialog.CurrentAppVersion;
 
         public bool IsUpdateAvailable
         {

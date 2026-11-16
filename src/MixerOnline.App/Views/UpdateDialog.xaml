@@ -50,9 +50,9 @@
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="New Version:" FontSize="11" Foreground="#71717a" Margin="0,0,6,0"/>
-                                <TextBlock x:Name="TxtLatestVersion" Text="v1.2.1-beta" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="#38bdf8"/>
+                                <TextBlock x:Name="TxtLatestVersion" Text="v1.2.2-beta" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="#38bdf8"/>
                                 <TextBlock Text=" (Current: " FontSize="11" Foreground="#52525b" Margin="6,0,0,0"/>
-                                <TextBlock x:Name="TxtCurrentVersion" Text="v1.2.0-beta" FontFamily="Consolas" FontSize="11" Foreground="#71717a"/>
+                                <TextBlock x:Name="TxtCurrentVersion" Text="v1.2.2-beta" FontFamily="Consolas" FontSize="11" Foreground="#71717a"/>
                                 <TextBlock Text=")" FontSize="11" Foreground="#52525b"/>
                             </StackPanel>
                             <TextBlock x:Name="TxtReleaseMeta" Text="Published on GitHub" FontSize="10" Foreground="#52525b" Margin="0,3,0,0"/>

@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using MixerOnline.Core.Config;
@@ -8,7 +9,22 @@ namespace MixerOnline.Views
 {
     public partial class SettingsDialog : Window
     {
-        private const string CurrentAppVersion = "1.2.1-beta";
+        public static string CurrentAppVersion
+        {
+            get
+            {
+                var asm = typeof(SettingsDialog).Assembly;
+                var infoVer = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+                if (!string.IsNullOrEmpty(infoVer))
+                {
+                    int plusIndex = infoVer.IndexOf('+');
+                    return plusIndex > 0 ? infoVer.Substring(0, plusIndex) : infoVer;
+                }
+                var ver = asm.GetName().Version;
+                return ver != null ? $"{ver.Major}.{ver.Minor}.{ver.Build}-beta" : "1.2.2-beta";
+            }
+        }
+
         private readonly AppSettings _settings;
         private readonly UpdateService _updateService = new();
 
